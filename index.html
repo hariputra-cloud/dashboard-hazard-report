@@ -106,6 +106,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body class="bg-navy-900 text-slate-100">
 
@@ -148,13 +149,19 @@
         { id: "HZD-127", dateStr: "2026-05-15", airport: "Bandara Ngurah Rai (DPS)", category: "FOD (Foreign Object Debris)", desc: "Kertas pembungkus mampet di kisi-kisi mesin gse", status: "PROSES", location: "Service Road Gate 2", risk: "Sedang" },
         { id: "HZD-128", dateStr: "2026-05-20", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Airfield Lighting", desc: "Indikator CCR sirkit 2 mengalami fluktuasi voltase", status: "PROSES", location: "Gedung Kelistrikan", risk: "Tinggi" },
         { id: "HZD-129", dateStr: "2026-05-26", airport: "Bandara Pattimura (AMQ)", category: "Drainase Sisi Udara", desc: "Endapan lumpur memenuhi parit pembuangan", status: "SELESAI", location: "Drainase Utama", risk: "Sedang" },
-        { id: "HZD-130", dateStr: "2026-06-02", airport: "Bandara Kualanamu (KNO)", category: "FOD (Foreign Object Debris)", desc: "Ditemukan serpihan ban terkelupas dekat Touchdown Zone", status: "SELESAI", location: "Runway 23", risk: "Tinggi" },
-        { id: "HZD-131", dateStr: "2026-06-10", airport: "Bandara Hang Nadim (BTH)", category: "Peralatan GSE", desc: "Mobil Baggage Towing Tractor kebocoran oli hidrolik", status: "PROSES", location: "Baggage Make-up Area", risk: "Tinggi" },
         { id: "HZD-132", dateStr: "2026-06-18", airport: "Bandara Lombok (LOP)", category: "Marka Runway/Taxiway/Apron", desc: "Marka garis pendaratan pudar tergerus cuaca", status: "SELESAI", location: "Taxiway Alpha", risk: "Sedang" },
         { id: "HZD-133", dateStr: "2026-06-25", airport: "Bandara Sultan Aji Muhammad Sulaiman (BPN)", category: "Rumput & Vegetasi Liar", desc: "Pohon tinggi di luar pagar memotong batas Obstacle Limitation", status: "PROSES", location: "Zona Runway Strip East", risk: "Tinggi" },
         { id: "HZD-134", dateStr: "2026-07-04", airport: "Bandara Soekarno-Hatta (CGK)", category: "Human Factor", desc: "Supir APMS menerobos batas garis marka keselamatan tanpa izin tower", status: "PROSES", location: "Service Road Terminal 3", risk: "Tinggi" },
         { id: "HZD-135", dateStr: "2026-07-11", airport: "Bandara Sam Ratulangi (MDC)", category: "Struktur Bangunan", desc: "Plafon terlepas akibat hembusan angin kencang", status: "SELESAI", location: "Selasar Keberangkatan", risk: "Sedang" }
     ];
+
+    const isExcludedAirport = (airportName) => {
+        if (!airportName) return true;
+        const clean = airportName.toString().trim().toLowerCase();
+        if (!clean || clean === "-" || clean === "null" || clean === "undefined" || clean === "tanpa nama" || clean === "n/a" || clean === "unnamed") return true;
+        if (clean.includes("hang nadim") || clean.includes("kualanamu") || clean.includes("kuala namu")) return true;
+        return false;
+    };
 
     const classifyHazard = (desc) => {
         if (!desc) return "Hazard Operasional lainnya";
@@ -189,16 +196,130 @@
         return "Sedang";
     };
 
+    const DownloadImageBtn = ({ targetId, filename, label = "Gambar PNG" }) => {
+        const [downloading, setDownloading] = useState(false);
+
+        const handleDownload = (e) => {
+            e.stopPropagation();
+            const elem = document.getElementById(targetId);
+            if (!elem) return;
+            setDownloading(true);
+
+            const h2c = window.html2canvas;
+            if (!h2c) {
+                console.error("Library Canvas belum siap.");
+                setDownloading(false);
+                return;
+            }
+
+            h2c(elem, {
+                scale: 3,
+                backgroundColor: '#0f172a',
+                useCORS: true,
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedElem = clonedDoc.getElementById(targetId);
+                    if (clonedElem) {
+                        const btns = clonedElem.querySelectorAll('.no-export-btn');
+                        btns.forEach(b => b.style.display = 'none');
+                        clonedElem.style.padding = '20px';
+                        clonedElem.style.borderRadius = '16px';
+                        clonedElem.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.5)';
+                    }
+                }
+            }).then(canvas => {
+                const imageUrl = canvas.toDataURL('image/png', 1.0);
+                const link = document.createElement('a');
+                link.download = `${filename}_${new Date().toISOString().slice(0,10)}.png`;
+                link.href = imageUrl;
+                link.click();
+                setDownloading(false);
+            }).catch(err => {
+                console.error("Export error:", err);
+                setDownloading(false);
+            });
+        };
+
+        return (
+            <button 
+                onClick={handleDownload}
+                disabled={downloading}
+                className="no-export-btn text-[11px] font-medium px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 transition-all flex items-center gap-1.5 shrink-0 hover:scale-105 active:scale-95 cursor-pointer"
+                title="Download gambar High Resolution (300 DPI) untuk Word & PowerPoint"
+            >
+                <i className={`fas ${downloading ? 'fa-spinner fa-spin text-amber-400' : 'fa-download text-sky-400'}`}></i>
+                <span>{downloading ? 'Proses...' : label}</span>
+            </button>
+        );
+    };
+
+    const DigitalClock = ({ currentTime }) => {
+        const formatTwoDigits = (num) => String(num).padStart(2, '0');
+        
+        const hours = formatTwoDigits(currentTime.getHours());
+        const minutes = formatTwoDigits(currentTime.getMinutes());
+        const seconds = formatTwoDigits(currentTime.getSeconds());
+        
+        const utcHours = formatTwoDigits(currentTime.getUTCHours());
+        const utcMinutes = formatTwoDigits(currentTime.getUTCMinutes());
+        const utcSeconds = formatTwoDigits(currentTime.getUTCSeconds());
+
+        const daysIndo = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const monthsIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        
+        const dayName = daysIndo[currentTime.getDay()];
+        const dayDate = currentTime.getDate();
+        const monthName = monthsIndo[currentTime.getMonth()];
+        const year = currentTime.getFullYear();
+
+        return (
+            <div className="flex items-center gap-3 bg-navy-950/90 border border-sky-500/40 backdrop-blur-md px-4 py-2 rounded-2xl shadow-[0_0_20px_rgba(56,189,248,0.2)] relative overflow-hidden group">
+                <div className="absolute -inset-x-full top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400 to-transparent group-hover:animate-pulse"></div>
+                
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 shrink-0">
+                    <i className="fas fa-clock text-lg animate-pulse"></i>
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping opacity-75"></span>
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
+                </div>
+
+                <div className="flex flex-col justify-center">
+                    <div className="flex items-baseline gap-2">
+                        <div className="font-mono text-xl sm:text-2xl font-black tracking-widest text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)] flex items-center">
+                            <span>{hours}</span>
+                            <span className="animate-pulse mx-0.5 text-sky-400">:</span>
+                            <span>{minutes}</span>
+                            <span className="animate-pulse mx-0.5 text-sky-400">:</span>
+                            <span className="text-sky-400/90 text-lg sm:text-xl">{seconds}</span>
+                        </div>
+
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 tracking-wider uppercase font-mono">
+                            WIB
+                        </span>
+
+                        <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-slate-700/80 text-[11px] font-mono">
+                            <i className="fas fa-plane-departure text-[10px] text-amber-400"></i>
+                            <span className="text-amber-300 font-bold">{utcHours}:{utcMinutes}:{utcSeconds}</span>
+                            <span className="text-[9px] text-amber-400/80 font-extrabold">ZULU (UTC)</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-slate-300 font-medium">
+                        <span className="text-sky-400 font-bold uppercase tracking-wider text-[10px]">{dayName},</span>
+                        <span className="text-slate-200 font-semibold">{dayDate} {monthName} {year}</span>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const App = () => {
         const [data, setData] = useState([]);
         const [loading, setLoading] = useState(false);
         const [fileName, setFileName] = useState("Embedded_Hazard_Dataset_2026.csv");
         const [currentTime, setCurrentTime] = useState(new Date());
         
-        // Navigation & View Tabs
-        const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'risk', 'table'
+        const [activeTab, setActiveTab] = useState('overview');
 
-        // Interactive Filters State
         const [searchTerm, setSearchTerm] = useState("");
         const [filterStart, setFilterStart] = useState("");
         const [filterEnd, setFilterEnd] = useState("");
@@ -209,16 +330,13 @@
         const [filterCompRate, setFilterCompRate] = useState("ALL");
         const [filterMonth, setFilterMonth] = useState("ALL");
 
-        // Table Pagination State
         const [currentPage, setCurrentPage] = useState(1);
         const itemsPerPage = 10;
 
-        // UI & Export State
         const [isDataLoaded, setIsDataLoaded] = useState(true);
         const [isExportingPDF, setIsExportingPDF] = useState(false);
         const [sidebarOpen, setSidebarOpen] = useState(true);
 
-        // Sorting & Modal State
         const [sortConfig, setSortConfig] = useState({ key: 'total', direction: 'desc' });
         const [modalConfig, setModalConfig] = useState({ isOpen: false, airport: null, type: null, data: [] });
         const [detailModalItem, setDetailModalItem] = useState(null);
@@ -228,18 +346,19 @@
         useEffect(() => {
             const timer = setInterval(() => setCurrentTime(new Date()), 1000);
             
-            // Transform embedded hardcoded dataset on initial render
-            const prepared = HARDCODED_DATASET.map(item => {
-                const dateObj = new Date(item.dateStr);
-                const month = dateObj.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
-                const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-                return {
-                    ...item,
-                    dateObj,
-                    month,
-                    monthKey
-                };
-            });
+            const prepared = HARDCODED_DATASET
+                .filter(item => !isExcludedAirport(item.airport))
+                .map(item => {
+                    const dateObj = new Date(item.dateStr);
+                    const month = dateObj.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
+                    const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                    return {
+                        ...item,
+                        dateObj,
+                        month,
+                        monthKey
+                    };
+                });
             
             setData(prepared);
             setIsDataLoaded(true);
@@ -355,7 +474,7 @@
                         const airportRaw = getVal('airport');
                         let apClean = airportRaw ? airportRaw.trim() : "";
 
-                        if (!apClean || apClean === "-") return;
+                        if (isExcludedAirport(apClean)) return;
 
                         const dateRaw = getVal('date');
                         const descRaw = getVal('desc');
@@ -668,7 +787,7 @@
         return (
             <div className="flex w-full min-h-screen bg-navy-900 text-slate-100 relative overflow-hidden">
                 
-                {}
+                {/* Sidebar Filter */}
                 <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 fixed lg:relative z-40 w-80 h-full min-h-screen bg-navy-800 border-r border-slate-800 flex flex-col shadow-2xl overflow-y-auto shrink-0`}>
                     <div className="p-5 border-b border-slate-700/60">
                         <div className="flex items-center justify-between mb-4">
@@ -731,7 +850,6 @@
                             </button>
                         </div>
 
-                        {/* Search Input */}
                         <div>
                             <label className="block text-slate-400 mb-1 font-semibold">Cari Keyword</label>
                             <div className="relative">
@@ -807,11 +925,11 @@
                     </div>
                 </aside>
 
-                {}
+                {/* Main Content Area */}
                 <main ref={dashboardRef} className={`${isExportingPDF ? 'w-[1080px] export-container' : 'flex-1'} flex flex-col h-screen overflow-y-auto bg-navy-900 p-4 lg:p-6`}>
                     
                     {/* Navigation Topbar */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-navy-800/80 p-4 rounded-2xl border border-slate-700/60 no-export">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 bg-navy-800/80 p-4 rounded-2xl border border-slate-700/60 no-export">
                         <div className="flex items-center gap-3">
                             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 bg-slate-800 rounded-lg text-slate-300">
                                 <i className="fas fa-bars"></i>
@@ -825,26 +943,29 @@
                             </div>
                         </div>
 
-                        {/* Interactive Navigation Tabs */}
-                        <div className="flex items-center bg-navy-900/90 p-1 rounded-xl border border-slate-700/80 self-start md:self-auto overflow-x-auto">
-                            <button 
-                                onClick={() => setActiveTab('overview')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'overview' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                <i className="fas fa-chart-pie"></i> Overview
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('risk')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'risk' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                <i className="fas fa-triangle-exclamation"></i> Matriks Risiko
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('table')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'table' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                <i className="fas fa-list-check"></i> Data Detail
-                            </button>
+                        <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+                            <DigitalClock currentTime={currentTime} />
+
+                            <div className="flex items-center bg-navy-900/90 p-1 rounded-xl border border-slate-700/80 overflow-x-auto">
+                                <button 
+                                    onClick={() => setActiveTab('overview')}
+                                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'overview' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+                                >
+                                    <i className="fas fa-chart-pie"></i> Overview
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('risk')}
+                                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'risk' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+                                >
+                                    <i className="fas fa-triangle-exclamation"></i> Matriks Risiko
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('table')}
+                                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'table' ? 'bg-aviation-blue text-navy-900 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+                                >
+                                    <i className="fas fa-list-check"></i> Data Detail
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -862,7 +983,7 @@
                         </div>
                     )}
 
-                    {}
+                    {/* KPI Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stats-section">
                         <div className="glass-panel p-4 rounded-xl border-l-4 border-l-aviation-blue shadow-md">
                             <div className="flex justify-between items-start">
@@ -906,17 +1027,21 @@
                     </div>
 
                     {}
+                    {/* OVERVIEW TAB */}
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             
                             {/* Monthly Trend & Status Pie Grid */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
+                                <div id="chart-monthly-trend" className="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                                            <i className="fas fa-chart-line text-aviation-blue"></i> Tren Kejadian Bulanan & Status
-                                        </h3>
-                                        <span className="text-xs text-slate-400">Progres penanganan hazard</span>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                                <i className="fas fa-chart-line text-aviation-blue"></i> Tren Kejadian Bulanan & Status
+                                            </h3>
+                                            <span className="text-xs text-slate-400">Progres penanganan hazard</span>
+                                        </div>
+                                        <DownloadImageBtn targetId="chart-monthly-trend" filename="Chart_Tren_Kejadian_Bulanan" label="Gambar PNG" />
                                     </div>
                                     <div className="w-full h-72">
                                         <ResponsiveContainer width="100%" height="100%">
@@ -948,10 +1073,13 @@
                                 </div>
 
                                 {/* Status Distribution Pie */}
-                                <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block flex flex-col justify-between">
-                                    <h3 className="text-sm font-bold text-slate-100 mb-2 flex items-center gap-2">
-                                        <i className="fas fa-chart-pie text-aviation-green"></i> Distribusi Status
-                                    </h3>
+                                <div id="chart-status-dist" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block flex flex-col justify-between">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-chart-pie text-aviation-green"></i> Distribusi Status
+                                        </h3>
+                                        <DownloadImageBtn targetId="chart-status-dist" filename="Chart_Distribusi_Status" label="Gambar PNG" />
+                                    </div>
                                     <div className="w-full h-56">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -983,12 +1111,15 @@
                             </div>
 
                             {/* Daily Fluctuation Trend Chart */}
-                            <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
+                            <div id="chart-daily-trend" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                                    <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                                        <i className="fas fa-chart-line text-sky-400"></i> Fluktuasi Laporan Harian ({filterMonth === 'ALL' ? 'Semua Bulan' : `Bulan ${filterMonth}`})
-                                    </h3>
-                                    <span className="text-xs text-slate-400">Distribusi tanggal laporan</span>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-chart-line text-sky-400"></i> Fluktuasi Laporan Harian ({filterMonth === 'ALL' ? 'Semua Bulan' : `Bulan ${filterMonth}`})
+                                        </h3>
+                                        <span className="text-xs text-slate-400">Distribusi tanggal laporan</span>
+                                    </div>
+                                    <DownloadImageBtn targetId="chart-daily-trend" filename="Chart_Fluktuasi_Harian" label="Gambar PNG" />
                                 </div>
                                 <div className="w-full h-64">
                                     {dailyTrendData.length > 0 ? (
@@ -1014,12 +1145,15 @@
                                 </div>
                             </div>
 
-                            {}
+                            {/* Top Hazard Categories & Locations Bar Charts */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
-                                    <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                        <i className="fas fa-list-ol text-amber-400"></i> Top Kategori Hazard
-                                    </h3>
+                                <div id="chart-top-hazards" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-list-ol text-amber-400"></i> Top Kategori Hazard
+                                        </h3>
+                                        <DownloadImageBtn targetId="chart-top-hazards" filename="Chart_Top_Kategori_Hazard" label="Gambar PNG" />
+                                    </div>
                                     <div className="w-full h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={topHazards} layout="vertical" margin={{ top: 5, right: 55, left: 110, bottom: 5 }}>
@@ -1038,10 +1172,13 @@
                                     </div>
                                 </div>
 
-                                <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
-                                    <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                        <i className="fas fa-map-pin text-rose-400"></i> Top Area Lokasi Temuan
-                                    </h3>
+                                <div id="chart-top-locations" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-map-pin text-rose-400"></i> Top Area Lokasi Temuan
+                                        </h3>
+                                        <DownloadImageBtn targetId="chart-top-locations" filename="Chart_Top_Lokasi_Temuan" label="Gambar PNG" />
+                                    </div>
                                     <div className="w-full h-72">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={topLocations} layout="vertical" margin={{ top: 5, right: 65, left: 100, bottom: 5 }}>
@@ -1061,43 +1198,70 @@
                                 </div>
                             </div>
 
-                            {}
-                            <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
-                                <h3 className="text-base font-bold text-slate-100 mb-4 flex items-center justify-between">
-                                    <span className="flex items-center gap-2"><i className="fas fa-building text-aviation-blue"></i> Performa Bandara & Rekapitulasi</span>
-                                    <span className="text-xs text-slate-400 font-normal">Klik angka untuk lihat detail</span>
-                                </h3>
+                            {/* Airport Performance Table */}
+                            <div id="table-airport-perf" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-building text-aviation-blue"></i> Performa Bandara & Rekapitulasi
+                                        </h3>
+                                        <p className="text-xs text-slate-400">Klik angka pada tabel untuk melihat detail laporan per bandara</p>
+                                    </div>
+                                    <DownloadImageBtn targetId="table-airport-perf" filename="Tabel_Performa_Bandara" label="Gambar Tabel PNG" />
+                                </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs text-slate-200">
-                                        <thead className="bg-slate-800/90 text-slate-400 uppercase font-semibold">
+                                        <thead className="bg-slate-800/80 text-slate-400 uppercase font-semibold">
                                             <tr>
-                                                <th className="p-3 cursor-pointer" onClick={() => handleSort('name')}>Bandara <i className="fas fa-sort ml-1"></i></th>
-                                                <th className="p-3 text-center cursor-pointer" onClick={() => handleSort('total')}>Total <i className="fas fa-sort ml-1"></i></th>
-                                                <th className="p-3 text-center text-emerald-400 cursor-pointer" onClick={() => handleSort('selesai')}>Selesai <i className="fas fa-sort ml-1"></i></th>
-                                                <th className="p-3 text-center text-amber-400 cursor-pointer" onClick={() => handleSort('proses')}>Proses <i className="fas fa-sort ml-1"></i></th>
-                                                <th className="p-3 text-center cursor-pointer" onClick={() => handleSort('compRate')}>Completion <i className="fas fa-sort ml-1"></i></th>
+                                                <th className="p-3 cursor-pointer hover:text-slate-100" onClick={() => handleSort('name')}>
+                                                    Nama Bandara / Cabang <i className="fas fa-sort ml-1"></i>
+                                                </th>
+                                                <th className="p-3 text-center cursor-pointer hover:text-slate-100" onClick={() => handleSort('total')}>
+                                                    Total Hazard <i className="fas fa-sort ml-1"></i>
+                                                </th>
+                                                <th className="p-3 text-center cursor-pointer hover:text-slate-100" onClick={() => handleSort('selesai')}>
+                                                    Selesai <i className="fas fa-sort ml-1"></i>
+                                                </th>
+                                                <th className="p-3 text-center cursor-pointer hover:text-slate-100" onClick={() => handleSort('proses')}>
+                                                    Proses <i className="fas fa-sort ml-1"></i>
+                                                </th>
+                                                <th className="p-3 text-center cursor-pointer hover:text-slate-100" onClick={() => handleSort('compRate')}>
+                                                    % Penyelesaian <i className="fas fa-sort ml-1"></i>
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-800">
-                                            {sortedAirportData.map((row, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-800/50 transition-colors">
-                                                    <td className="p-3 font-medium text-slate-100">{row.name}</td>
+                                            {sortedAirportData.map((ap, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
+                                                    <td className="p-3 font-semibold text-slate-200">{ap.name}</td>
                                                     <td className="p-3 text-center">
-                                                        <button onClick={() => handleOpenAirportModal(row.name, 'all')} className="text-sky-400 font-bold hover:underline">{row.total}</button>
+                                                        <button 
+                                                            onClick={() => handleOpenAirportModal(ap.name, 'all')}
+                                                            className="px-2.5 py-1 rounded-md bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold border border-sky-500/30 transition-all"
+                                                        >
+                                                            {ap.total}
+                                                        </button>
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        <button onClick={() => handleOpenAirportModal(row.name, 'selesai')} className="text-emerald-400 font-bold hover:underline">{row.selesai}</button>
+                                                        <button 
+                                                            onClick={() => handleOpenAirportModal(ap.name, 'selesai')}
+                                                            className="px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 transition-all"
+                                                        >
+                                                            {ap.selesai}
+                                                        </button>
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        <button onClick={() => handleOpenAirportModal(row.name, 'proses')} className="text-amber-400 font-bold hover:underline">{row.proses}</button>
+                                                        <button 
+                                                            onClick={() => handleOpenAirportModal(ap.name, 'proses')}
+                                                            className="px-2.5 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 transition-all"
+                                                        >
+                                                            {ap.proses}
+                                                        </button>
                                                     </td>
-                                                    <td className="p-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-full bg-slate-700 rounded-full h-1.5">
-                                                                <div className={`h-1.5 rounded-full ${row.compRate >= 80 ? 'bg-emerald-400' : row.compRate >= 50 ? 'bg-amber-400' : 'bg-rose-400'}`} style={{ width: `${row.compRate}%` }}></div>
-                                                            </div>
-                                                            <span className="font-mono text-[11px] w-10 text-right">{row.compRateStr}</span>
-                                                        </div>
+                                                    <td className="p-3 text-center">
+                                                        <span className={`font-bold ${ap.compRate >= 80 ? 'text-emerald-400' : ap.compRate >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                                                            {ap.compRateStr}
+                                                        </span>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1105,17 +1269,21 @@
                                     </table>
                                 </div>
                             </div>
+
                         </div>
                     )}
 
-                    {}
+                    {/* RISK MATRIX TAB */}
                     {activeTab === 'risk' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl col-span-1">
-                                    <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                        <i className="fas fa-triangle-exclamation text-rose-400"></i> Proporsi Profil Risiko
-                                    </h3>
+                                <div id="chart-risk-profile" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl col-span-1">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                            <i className="fas fa-triangle-exclamation text-rose-400"></i> Proporsi Profil Risiko
+                                        </h3>
+                                        <DownloadImageBtn targetId="chart-risk-profile" filename="Chart_Profil_Risiko" label="Gambar PNG" />
+                                    </div>
                                     <div className="w-full h-64">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -1139,34 +1307,37 @@
                                     </div>
                                 </div>
 
-                                <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl md:col-span-2 flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="text-sm font-bold text-slate-100 mb-2 flex items-center gap-2">
-                                            <i className="fas fa-shield-cat text-amber-400"></i> Klasifikasi Tingkat Bahaya Risiko
-                                        </h3>
-                                        <p className="text-xs text-slate-400 mb-4">
-                                            Matriks penilaian risiko keselamatan penerbangan berdasarkan dampak operasional terhadap keamanan airside.
-                                        </p>
+                                <div id="info-risk-classification" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl md:col-span-2 flex flex-col justify-between">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                                                <i className="fas fa-shield-cat text-amber-400"></i> Klasifikasi Tingkat Bahaya Risiko
+                                            </h3>
+                                            <p className="text-xs text-slate-400 mt-1">
+                                                Matriks penilaian risiko keselamatan penerbangan berdasarkan dampak operasional terhadap keamanan airside.
+                                            </p>
+                                        </div>
+                                        <DownloadImageBtn targetId="info-risk-classification" filename="Infografis_Klasifikasi_Risiko" label="Gambar PNG" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
                                         <div className="bg-rose-950/40 border border-rose-500/30 p-3 rounded-xl">
                                             <div className="flex items-center gap-2 text-rose-400 font-bold text-xs mb-1">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Tinggi
+                                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Risiko Tinggi
                                             </div>
-                                            <p className="text-[11px] text-slate-300">Resiko tinggi terhadap keselamatan runway, AFL, birdstrike, FOD tajam. Butuh tindakan instan.</p>
+                                            <p className="text-[11px] text-slate-300">Hazard kritikal pada area pergerakan utama runway, AFL, FOD tajam, dan bird strike. Wajib tindakan langsung.</p>
                                         </div>
                                         <div className="bg-amber-950/40 border border-amber-500/30 p-3 rounded-xl">
                                             <div className="flex items-center gap-2 text-amber-400 font-bold text-xs mb-1">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Sedang
+                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Risiko Sedang
                                             </div>
-                                            <p className="text-[11px] text-slate-300">Gangguan minor pada apron, taxiway, drainase. Membutuhkan tindak lanjut berkala.</p>
+                                            <p className="text-[11px] text-slate-300">Potensi gangguan operasional sedang pada taxiway/apron, marka memudar, vegetasi tinggi. Penanganan terjadwal.</p>
                                         </div>
                                         <div className="bg-emerald-950/40 border border-emerald-500/30 p-3 rounded-xl">
                                             <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
-                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Rendah
+                                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Risiko Rendah
                                             </div>
-                                            <p className="text-[11px] text-slate-300">Sanitasi, kebersihan umum, fasilitas minor. Risiko minimal terhadap keselamatan penerbangan.</p>
+                                            <p className="text-[11px] text-slate-300">Hazard minor fasilitas non-vital seperti sanitasi toilet publik & kebersihan umum. Pemeliharaan rutin.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1175,15 +1346,17 @@
                     )}
 
                     {}
+                    {/* TABLE DATA TAB */}
                     {activeTab === 'table' && (
-                        <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl space-y-4">
+                        <div id="table-hazard-detail" className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl space-y-4">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                                    <i className="fas fa-table text-aviation-blue"></i> Detail Laporan Hazard ({filteredData.length})
-                                </h3>
-                                <div className="text-xs text-slate-400">
-                                    Menampilkan Halaman {currentPage} dari {totalPages}
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                                        <i className="fas fa-table text-aviation-blue"></i> Detail Laporan Hazard ({filteredData.length})
+                                    </h3>
+                                    <p className="text-xs text-slate-400">Menampilkan Halaman {currentPage} dari {totalPages}</p>
                                 </div>
+                                <DownloadImageBtn targetId="table-hazard-detail" filename="Tabel_Detail_Laporan_Hazard" label="Gambar Tabel PNG" />
                             </div>
 
                             <div className="overflow-x-auto">
@@ -1269,69 +1442,123 @@
                 </main>
 
                 {}
+                {/* Detail Modal */}
                 {detailModalItem && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                        <div className="bg-navy-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                        <div className="relative bg-navy-800/90 border border-sky-500/30 rounded-2xl max-w-2xl w-full p-8 shadow-[0_0_40px_rgba(56,189,248,0.15)] overflow-hidden animate-in zoom-in-95 duration-200">
+                            
+                            {/* Futuristic Background Accents */}
+                            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-400 opacity-80"></div>
+
                             <button 
                                 onClick={() => setDetailModalItem(null)} 
-                                className="absolute top-4 right-4 text-slate-400 hover:text-slate-200"
+                                className="absolute top-5 right-5 text-slate-400 hover:text-sky-400 transition-colors bg-navy-900/50 p-2 rounded-full border border-slate-700/50 hover:border-sky-500/50"
                             >
                                 <i className="fas fa-times text-lg"></i>
                             </button>
-                            <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-4">
-                                <i className="fas fa-file-circle-exclamation text-aviation-blue"></i> Detail Hazard Report
-                            </h3>
-                            <div className="space-y-3 text-xs text-slate-300">
-                                <div className="grid grid-cols-2 gap-2 bg-navy-900/60 p-3 rounded-xl border border-slate-800">
-                                    <div>
-                                        <p className="text-slate-400 text-[10px] uppercase font-bold">ID Laporan</p>
-                                        <p className="font-mono text-sky-400 font-bold">{detailModalItem.id}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-400 text-[10px] uppercase font-bold">Tanggal</p>
-                                        <p className="font-semibold">{detailModalItem.dateObj ? detailModalItem.dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'}</p>
-                                    </div>
+                            
+                            <div className="flex items-center gap-3 mb-6 border-b border-slate-700/60 pb-4">
+                                <div className="p-3 bg-sky-500/10 rounded-xl border border-sky-500/30 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                                    <i className="fas fa-radar text-2xl animate-pulse"></i>
                                 </div>
                                 <div>
-                                    <p className="text-slate-400 text-[10px] uppercase font-bold mb-0.5">Bandara</p>
-                                    <p className="font-semibold text-slate-100">{detailModalItem.airport}</p>
+                                    <h3 className="text-xl font-black text-slate-100 tracking-wide uppercase font-mono">
+                                        Hazard <span className="text-sky-400">Analysis</span>
+                                    </h3>
+                                    <p className="text-xs text-slate-400 font-mono tracking-widest uppercase">ID: <span className="text-amber-400 font-bold">{detailModalItem.id}</span></p>
                                 </div>
-                                <div>
-                                    <p className="text-slate-400 text-[10px] uppercase font-bold mb-0.5">Kategori & Lokasi</p>
-                                    <p className="font-semibold text-amber-400">{detailModalItem.category} - <span className="text-slate-200">{detailModalItem.location}</span></p>
-                                </div>
-                                <div>
-                                    <p className="text-slate-400 text-[10px] uppercase font-bold mb-0.5">Uraian Temuan Hazard</p>
-                                    <div className="p-3 bg-navy-900 rounded-xl border border-slate-800 text-slate-200 leading-relaxed">
-                                        {detailModalItem.desc}
+                            </div>
+                            
+                            <div className="space-y-5">
+                                {/* Top Stats Row */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="bg-navy-900/60 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <i className="fas fa-calendar-alt text-slate-400 text-lg mb-2 group-hover:text-sky-400 transition-colors"></i>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Tanggal Kejadian</p>
+                                        <p className="font-mono text-xs font-bold text-slate-200">
+                                            {detailModalItem.dateObj ? detailModalItem.dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                        </p>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 pt-2">
-                                    <div>
-                                        <p className="text-slate-400 text-[10px] uppercase font-bold mb-1">Status Tindak Lanjut</p>
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                            detailModalItem.status === 'SELESAI' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                        }`}>
-                                            {detailModalItem.status}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-400 text-[10px] uppercase font-bold mb-1">Tingkat Risiko</p>
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                            detailModalItem.risk === 'Tinggi' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
-                                            detailModalItem.risk === 'Sedang' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                                            'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                    <div className="bg-navy-900/60 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <i className={`fas fa-triangle-exclamation text-lg mb-2 transition-colors ${
+                                            detailModalItem.risk === 'Tinggi' ? 'text-rose-500 group-hover:text-rose-400' :
+                                            detailModalItem.risk === 'Sedang' ? 'text-amber-500 group-hover:text-amber-400' :
+                                            'text-emerald-500 group-hover:text-emerald-400'
+                                        }`}></i>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Risk Level</p>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                                            detailModalItem.risk === 'Tinggi' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.3)]' :
+                                            detailModalItem.risk === 'Sedang' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(251,191,36,0.3)]' :
+                                            'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.3)]'
                                         }`}>
                                             {detailModalItem.risk}
                                         </span>
                                     </div>
+                                    <div className="bg-navy-900/60 border border-slate-700/50 p-4 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
+                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <i className={`fas text-lg mb-2 transition-colors ${
+                                            detailModalItem.status === 'SELESAI' ? 'fa-check-circle text-emerald-500 group-hover:text-emerald-400' : 'fa-spinner fa-spin-pulse text-amber-500 group-hover:text-amber-400'
+                                        }`}></i>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Status</p>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                                            detailModalItem.status === 'SELESAI' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_10px_rgba(52,211,153,0.3)]' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-[0_0_10px_rgba(251,191,36,0.3)]'
+                                        }`}>
+                                            {detailModalItem.status}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Main Detail Sections */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="space-y-4">
+                                        <div className="bg-navy-900/40 border-l-2 border-l-sky-500 p-3 rounded-r-xl">
+                                            <p className="text-[10px] text-sky-400/80 uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5"><i className="fas fa-location-crosshairs text-[10px]"></i> Lokasi Bandara</p>
+                                            <p className="font-semibold text-slate-100 text-sm">{detailModalItem.airport}</p>
+                                        </div>
+                                        <div className="bg-navy-900/40 border-l-2 border-l-amber-500 p-3 rounded-r-xl">
+                                            <p className="text-[10px] text-amber-400/80 uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5"><i className="fas fa-layer-group text-[10px]"></i> Kategori Hazard</p>
+                                            <p className="font-semibold text-amber-300 text-sm">{detailModalItem.category}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-navy-900/40 border-l-2 border-l-rose-500 p-3 rounded-r-xl h-full flex flex-col">
+                                         <p className="text-[10px] text-rose-400/80 uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5"><i className="fas fa-map-pin text-[10px]"></i> Titik Spesifik Area</p>
+                                         <p className="font-semibold text-slate-100 text-sm flex-1">{detailModalItem.location}</p>
+                                    </div>
+                                </div>
+
+                                {/* Description Box */}
+                                <div className="relative">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/20 to-emerald-500/20 rounded-xl blur-sm opacity-50"></div>
+                                    <div className="relative bg-navy-950/80 border border-slate-700/60 rounded-xl p-5">
+                                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
+                                            <i className="fas fa-align-left text-sky-400"></i> Uraian Detail Temuan
+                                        </p>
+                                        <p className="text-slate-200 text-sm leading-relaxed font-medium">
+                                            {detailModalItem.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {/* Bottom Action Row */}
+                                <div className="flex justify-end pt-2 border-t border-slate-700/60">
+                                    <button 
+                                        onClick={() => setDetailModalItem(null)} 
+                                        className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg transition-colors border border-slate-600 hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/50 uppercase tracking-wider"
+                                    >
+                                        Tutup Panel
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {}
+                {/* Airport Detail Modal */}
                 {modalConfig.isOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                         <div className="bg-navy-800 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
