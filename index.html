@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hazard Report Dashboard Interaktif</title>
     
-    <!-- External CSS Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,14 +32,14 @@
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
         
         .glass-panel { 
-            background: rgba(15, 23, 42, 0.75); 
-            border: 1px solid rgba(51, 65, 85, 0.5); 
+            background: rgba(15, 23, 42, 0.85); 
+            border: 1px solid rgba(51, 65, 85, 0.6); 
             backdrop-filter: blur(12px); 
         }
         
         .glass-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(71, 85, 105, 0.3);
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.4);
             backdrop-filter: blur(8px);
         }
 
@@ -52,7 +51,7 @@
             to { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
         }
 
-        /* PDF Export Modes */
+        /* PDF Export Layout Overrides */
         body.export-mode {
             overflow: visible !important;
             height: auto !important;
@@ -100,7 +99,6 @@
         }
     </style>
 
-    <!-- React, Recharts, PapaParse, & html2pdf CDN Dependencies -->
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
@@ -120,36 +118,43 @@
         XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList 
     } = window.Recharts;
 
-    const DEFAULT_SAMPLE_CSV = `Event Date,Airport,Category,Description,Status,Lokasi Detail,Risk Rating
-05/01/2026,Bandara Soekarno-Hatta (CGK),FOD,Ditemukan baut lepas dan kawat kassa serpihan di taxiway,SELESAI,Taxiway Echo 3,Tinggi
-08/01/2026,Bandara Soekarno-Hatta (CGK),Bird Strike,Kawanan burung gereja berkumpul dekat helipad,SELESAI,Area Helipad,Sedang
-12/01/2026,Bandara Juanda (SUB),Airfield Lighting,Lampu PAPI runway 10 padam dua unit saat inspeksi malam,SELESAI,Runway 10,Tinggi
-14/01/2026,Bandara Ngurah Rai (DPS),Struktur Permukaan,Retak aspal lokal pada shoulder runway pasca hujan deras,SELESAI,Runway 09,Tinggi
-18/01/2026,Bandara Sultan Hasanuddin (UPG),Sanitasi,Saluran air di area toilet kedatangan mampet,SELESAI,Terminal Kedatangan Domestik,Rendah
-25/01/2026,Bandara SAMS Sepinggan (BPN),Drainase Sisi Udara,Genangan air terdeteksi di parit pinggir taxiway,SELESAI,Taxiway Bravo,Sedang
-02/02/2026,Bandara Soekarno-Hatta (CGK),FOD,Kerikil halus berserakan di apron bay 21,SELESAI,Apron Bay 21,Tinggi
-05/02/2026,Bandara Juanda (SUB),Bird Strike,Aktivitas burung kuntul terpantau di zona pendaratan,SELESAI,Zona Approach Runway 28,Tinggi
-10/02/2026,Bandara Ngurah Rai (DPS),FOD,Benda asing batu pecah ditemukan personel patroli,SELESAI,Taxiway November,Tinggi
-14/02/2026,Bandara Sultan Hasanuddin (UPG),Sanitasi,Aroma tidak sedap dari saluran pembuangan waste water,PROSES,Area Janitor Terminal,Rendah
-18/02/2026,Bandara Minangkabau (PDG),Rumput & Vegetasi Liar,Rumput ilalang melebihi batas tinggi standar keselamatan,SELESAI,Strip Runway Sisi Utara,Sedang
-24/02/2026,Bandara Yogyakarta (YIA),Airfield Lighting,Kabel trafo Constant Current Regulator perlu pemeliharaan,SELESAI,Gedung AFL Substation,Tinggi
-01/03/2026,Bandara Soekarno-Hatta (CGK),FOD,Serpihan cat marka terkelupas di area pendaratan,SELESAI,Runway 25L,Sedang
-05/03/2026,Bandara Juanda (SUB),Sanitasi,Kran air kotor tersumbat endapan pasir,SELESAI,Toilet Keberangkatan T1,Rendah
-10/03/2026,Bandara SAMS Sepinggan (BPN),Wildlife Hazard,Kucing liar masuk ke zona apron barat,SELESAI,Apron Barat,Sedang
-15/03/2026,Bandara Ngurah Rai (DPS),Drainase Sisi Udara,Gorong-gorong tersumbat sampah daun kering,SELESAI,Drainase Runway,Sedang
-20/03/2026,Bandara Sultan Hasanuddin (UPG),Struktur Permukaan,Amblas tipis pada perkerasan beton bay 12,PROSES,Apron Bay 12,Tinggi
-28/03/2026,Bandara Radin Inten II (TKG),Kelistrikan Bangunan,Stop kontak di ruang tunggu T2 mengeluarkan percikan,SELESAI,Gate 3 Keberangkatan,Tinggi
-02/04/2026,Bandara Soekarno-Hatta (CGK),Human Factor,Personel GSE tidak memakai rompi K3 saat pendorongan,PROSES,Apron Bay 42,Tinggi
-07/04/2026,Bandara Juanda (SUB),FOD,Plastik pembungkus kargo terlepas terbawa angin,SELESAI,Area Kargo,Sedang
-12/04/2026,Bandara Ngurah Rai (DPS),Airfield Lighting,Lampu taxiway edge bernomor 14 redup,SELESAI,Taxiway Golf,Sedang
-18/04/2026,Bandara Sultan Hasanuddin (UPG),Sanitasi,Kloset meluap di toilet publik keberangkatan,SELESAI,Terminal Keberangkatan,Rendah
-22/04/2026,Bandara Syamsudin Noor (BDJ),Struktur Permukaan,Lubang kecil (pothole) pada aspal service road,SELESAI,Service Road Sisi Udara,Sedang
-29/04/2026,Bandara Supadio (PNK),FOD,Kawat staples bekas kargo tercecer di apron,SELESAI,Apron Kargo,Tinggi
-03/05/2026,Bandara Soekarno-Hatta (CGK),Bird Strike,Burung layang-layang terbang melintas rendah di threshold,SELESAI,Runway 07R,Tinggi
-08/05/2026,Bandara Juanda (SUB),Sanitasi,Saluran air cuci tangan bocor di lavatory,SELESAI,Toilet Area Publik,Rendah
-15/05/2026,Bandara Ngurah Rai (DPS),FOD,Kertas pembungkus mampet di kisi-kisi mesin gse,PROSES,Service Road Gate 2,Sedang
-20/05/2026,Bandara Sultan Hasanuddin (UPG),Airfield Lighting,Indikator CCR sirkit 2 mengalami fluktuasi voltase,PROSES,Gedung Kelistrikan,Tinggi
-26/05/2026,Bandara Pattimura (AMQ),Drainase Sisi Udara,Endapan lumpur memenuhi parit pembuangan,SELESAI,Drainase Utama,Sedang`;
+    const HARDCODED_DATASET = [
+        { id: "HZD-101", dateStr: "2026-01-05", airport: "Bandara Soekarno-Hatta (CGK)", category: "FOD (Foreign Object Debris)", desc: "Ditemukan baut lepas dan kawat kassa serpihan di taxiway Echo 3", status: "SELESAI", location: "Taxiway Echo 3", risk: "Tinggi" },
+        { id: "HZD-102", dateStr: "2026-01-08", airport: "Bandara Soekarno-Hatta (CGK)", category: "Bird Strike", desc: "Kawanan burung gereja berkumpul dekat helipad", status: "SELESAI", location: "Area Helipad", risk: "Sedang" },
+        { id: "HZD-103", dateStr: "2026-01-12", airport: "Bandara Juanda (SUB)", category: "Airfield Lighting", desc: "Lampu PAPI runway 10 padam dua unit saat inspeksi malam", status: "SELESAI", location: "Runway 10", risk: "Tinggi" },
+        { id: "HZD-104", dateStr: "2026-01-14", airport: "Bandara Ngurah Rai (DPS)", category: "Struktur Permukaan", desc: "Retak aspal lokal pada shoulder runway pasca hujan deras", status: "SELESAI", location: "Runway 09", risk: "Tinggi" },
+        { id: "HZD-105", dateStr: "2026-01-18", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Sanitasi", desc: "Saluran air di area toilet kedatangan mampet", status: "SELESAI", location: "Terminal Kedatangan Domestik", risk: "Rendah" },
+        { id: "HZD-106", dateStr: "2026-01-25", airport: "Bandara SAMS Sepinggan (BPN)", category: "Drainase Sisi Udara", desc: "Genangan air terdeteksi di parit pinggir taxiway Bravo", status: "SELESAI", location: "Taxiway Bravo", risk: "Sedang" },
+        { id: "HZD-107", dateStr: "2026-02-02", airport: "Bandara Soekarno-Hatta (CGK)", category: "FOD (Foreign Object Debris)", desc: "Kerikil halus berserakan di apron bay 21", status: "SELESAI", location: "Apron Bay 21", risk: "Tinggi" },
+        { id: "HZD-108", dateStr: "2026-02-05", airport: "Bandara Juanda (SUB)", category: "Bird Strike", desc: "Aktivitas burung kuntul terpantau di zona pendaratan", status: "SELESAI", location: "Zona Approach Runway 28", risk: "Tinggi" },
+        { id: "HZD-109", dateStr: "2026-02-10", airport: "Bandara Ngurah Rai (DPS)", category: "FOD (Foreign Object Debris)", desc: "Benda asing batu pecah ditemukan personel patroli", status: "SELESAI", location: "Taxiway November", risk: "Tinggi" },
+        { id: "HZD-110", dateStr: "2026-02-14", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Sanitasi", desc: "Aroma tidak sedap dari saluran pembuangan waste water", status: "PROSES", location: "Area Janitor Terminal", risk: "Rendah" },
+        { id: "HZD-111", dateStr: "2026-02-18", airport: "Bandara Minangkabau (PDG)", category: "Rumput & Vegetasi Liar", desc: "Rumput ilalang melebihi batas tinggi standar keselamatan", status: "SELESAI", location: "Strip Runway Sisi Utara", risk: "Sedang" },
+        { id: "HZD-112", dateStr: "2026-02-24", airport: "Bandara Yogyakarta (YIA)", category: "Airfield Lighting", desc: "Kabel trafo Constant Current Regulator perlu pemeliharaan", status: "SELESAI", location: "Gedung AFL Substation", risk: "Tinggi" },
+        { id: "HZD-113", dateStr: "2026-03-01", airport: "Bandara Soekarno-Hatta (CGK)", category: "FOD (Foreign Object Debris)", desc: "Serpihan cat marka terkelupas di area pendaratan", status: "SELESAI", location: "Runway 25L", risk: "Sedang" },
+        { id: "HZD-114", dateStr: "2026-03-05", airport: "Bandara Juanda (SUB)", category: "Sanitasi", desc: "Kran air kotor tersumbat endapan pasir", status: "SELESAI", location: "Toilet Keberangkatan T1", risk: "Rendah" },
+        { id: "HZD-115", dateStr: "2026-03-10", airport: "Bandara SAMS Sepinggan (BPN)", category: "Wildlife Hazard", desc: "Kucing liar masuk ke zona apron barat", status: "SELESAI", location: "Apron Barat", risk: "Sedang" },
+        { id: "HZD-116", dateStr: "2026-03-15", airport: "Bandara Ngurah Rai (DPS)", category: "Drainase Sisi Udara", desc: "Gorong-gorong tersumbat sampah daun kering", status: "SELESAI", location: "Drainase Runway", risk: "Sedang" },
+        { id: "HZD-117", dateStr: "2026-03-20", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Struktur Permukaan", desc: "Amblas tipis pada perkerasan beton bay 12", status: "PROSES", location: "Apron Bay 12", risk: "Tinggi" },
+        { id: "HZD-118", dateStr: "2026-03-28", airport: "Bandara Radin Inten II (TKG)", category: "Kelistrikan Bangunan", desc: "Stop kontak di ruang tunggu T2 mengeluarkan percikan", status: "SELESAI", location: "Gate 3 Keberangkatan", risk: "Tinggi" },
+        { id: "HZD-119", dateStr: "2026-04-02", airport: "Bandara Soekarno-Hatta (CGK)", category: "Human Factor", desc: "Personel GSE tidak memakai rompi K3 saat pendorongan", status: "PROSES", location: "Apron Bay 42", risk: "Tinggi" },
+        { id: "HZD-120", dateStr: "2026-04-07", airport: "Bandara Juanda (SUB)", category: "FOD (Foreign Object Debris)", desc: "Plastik pembungkus kargo terlepas terbawa angin", status: "SELESAI", location: "Area Kargo", risk: "Sedang" },
+        { id: "HZD-121", dateStr: "2026-04-12", airport: "Bandara Ngurah Rai (DPS)", category: "Airfield Lighting", desc: "Lampu taxiway edge bernomor 14 redup", status: "SELESAI", location: "Taxiway Golf", risk: "Sedang" },
+        { id: "HZD-122", dateStr: "2026-04-18", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Sanitasi", desc: "Kloset meluap di toilet publik keberangkatan", status: "SELESAI", location: "Terminal Keberangkatan", risk: "Rendah" },
+        { id: "HZD-123", dateStr: "2026-04-22", airport: "Bandara Syamsudin Noor (BDJ)", category: "Struktur Permukaan", desc: "Lubang kecil (pothole) pada aspal service road", status: "SELESAI", location: "Service Road Sisi Udara", risk: "Sedang" },
+        { id: "HZD-124", dateStr: "2026-04-29", airport: "Bandara Supadio (PNK)", category: "FOD (Foreign Object Debris)", desc: "Kawat staples bekas kargo tercecer di apron", status: "SELESAI", location: "Apron Kargo", risk: "Tinggi" },
+        { id: "HZD-125", dateStr: "2026-05-03", airport: "Bandara Soekarno-Hatta (CGK)", category: "Bird Strike", desc: "Burung layang-layang terbang melintas rendah di threshold", status: "SELESAI", location: "Runway 07R", risk: "Tinggi" },
+        { id: "HZD-126", dateStr: "2026-05-08", airport: "Bandara Juanda (SUB)", category: "Sanitasi", desc: "Saluran air cuci tangan bocor di lavatory", status: "SELESAI", location: "Toilet Area Publik", risk: "Rendah" },
+        { id: "HZD-127", dateStr: "2026-05-15", airport: "Bandara Ngurah Rai (DPS)", category: "FOD (Foreign Object Debris)", desc: "Kertas pembungkus mampet di kisi-kisi mesin gse", status: "PROSES", location: "Service Road Gate 2", risk: "Sedang" },
+        { id: "HZD-128", dateStr: "2026-05-20", airport: "Bandara Sultan Hasanuddin (UPG)", category: "Airfield Lighting", desc: "Indikator CCR sirkit 2 mengalami fluktuasi voltase", status: "PROSES", location: "Gedung Kelistrikan", risk: "Tinggi" },
+        { id: "HZD-129", dateStr: "2026-05-26", airport: "Bandara Pattimura (AMQ)", category: "Drainase Sisi Udara", desc: "Endapan lumpur memenuhi parit pembuangan", status: "SELESAI", location: "Drainase Utama", risk: "Sedang" },
+        { id: "HZD-130", dateStr: "2026-06-02", airport: "Bandara Kualanamu (KNO)", category: "FOD (Foreign Object Debris)", desc: "Ditemukan serpihan ban terkelupas dekat Touchdown Zone", status: "SELESAI", location: "Runway 23", risk: "Tinggi" },
+        { id: "HZD-131", dateStr: "2026-06-10", airport: "Bandara Hang Nadim (BTH)", category: "Peralatan GSE", desc: "Mobil Baggage Towing Tractor kebocoran oli hidrolik", status: "PROSES", location: "Baggage Make-up Area", risk: "Tinggi" },
+        { id: "HZD-132", dateStr: "2026-06-18", airport: "Bandara Lombok (LOP)", category: "Marka Runway/Taxiway/Apron", desc: "Marka garis pendaratan pudar tergerus cuaca", status: "SELESAI", location: "Taxiway Alpha", risk: "Sedang" },
+        { id: "HZD-133", dateStr: "2026-06-25", airport: "Bandara Sultan Aji Muhammad Sulaiman (BPN)", category: "Rumput & Vegetasi Liar", desc: "Pohon tinggi di luar pagar memotong batas Obstacle Limitation", status: "PROSES", location: "Zona Runway Strip East", risk: "Tinggi" },
+        { id: "HZD-134", dateStr: "2026-07-04", airport: "Bandara Soekarno-Hatta (CGK)", category: "Human Factor", desc: "Supir APMS menerobos batas garis marka keselamatan tanpa izin tower", status: "PROSES", location: "Service Road Terminal 3", risk: "Tinggi" },
+        { id: "HZD-135", dateStr: "2026-07-11", airport: "Bandara Sam Ratulangi (MDC)", category: "Struktur Bangunan", desc: "Plafon terlepas akibat hembusan angin kencang", status: "SELESAI", location: "Selasar Keberangkatan", risk: "Sedang" }
+    ];
 
     const classifyHazard = (desc) => {
         if (!desc) return "Hazard Operasional lainnya";
@@ -186,8 +191,8 @@
 
     const App = () => {
         const [data, setData] = useState([]);
-        const [loading, setLoading] = useState(true);
-        const [fileName, setFileName] = useState("");
+        const [loading, setLoading] = useState(false);
+        const [fileName, setFileName] = useState("Embedded_Hazard_Dataset_2026.csv");
         const [currentTime, setCurrentTime] = useState(new Date());
         
         // Navigation & View Tabs
@@ -209,7 +214,7 @@
         const itemsPerPage = 10;
 
         // UI & Export State
-        const [isDataLoaded, setIsDataLoaded] = useState(false);
+        const [isDataLoaded, setIsDataLoaded] = useState(true);
         const [isExportingPDF, setIsExportingPDF] = useState(false);
         const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -222,12 +227,25 @@
 
         useEffect(() => {
             const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+            
+            // Transform embedded hardcoded dataset on initial render
+            const prepared = HARDCODED_DATASET.map(item => {
+                const dateObj = new Date(item.dateStr);
+                const month = dateObj.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
+                const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                return {
+                    ...item,
+                    dateObj,
+                    month,
+                    monthKey
+                };
+            });
+            
+            setData(prepared);
+            setIsDataLoaded(true);
+
             return () => clearInterval(timer);
         }, []);
-
-        const formattedDate = currentTime.toLocaleDateString('id-ID', { 
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-        });
 
         const handleExportPDF = () => {
             if (!dashboardRef.current) return;
@@ -289,9 +307,9 @@
             document.body.removeChild(link);
         };
 
-        const parseCSV = (fileOrUrl) => {
+        const parseCSV = (file) => {
             setLoading(true);
-            Papa.parse(fileOrUrl, {
+            Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
@@ -326,7 +344,7 @@
                     };
 
                     const processedData = [];
-                    let idCounter = 101;
+                    let idCounter = 501;
 
                     rawData.forEach((row) => {
                         const getVal = (colKey) => {
@@ -336,12 +354,8 @@
 
                         const airportRaw = getVal('airport');
                         let apClean = airportRaw ? airportRaw.trim() : "";
-                        const apUpper = apClean.toUpperCase();
 
-                        if (!apClean || apClean === "-" || apUpper === "UNSPECIFIED" || 
-                            apUpper.includes("HANG NADIM") || apUpper.includes("KUALANAMU") || apUpper.includes("KUALA NAMU")) {
-                            return;
-                        }
+                        if (!apClean || apClean === "-") return;
 
                         const dateRaw = getVal('date');
                         const descRaw = getVal('desc');
@@ -362,7 +376,7 @@
                             dateObj = new Date(dateRaw);
                         }
 
-                        if (isNaN(dateObj.getTime())) dateObj = new Date(2026, 0, 1);
+                        if (isNaN(dateObj.getTime())) dateObj = new Date();
                         
                         const month = dateObj.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
                         const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
@@ -378,7 +392,6 @@
 
                         processedData.push({
                             id: `HZD-${idCounter++}`,
-                            raw: row,
                             dateObj,
                             month,
                             monthKey,
@@ -409,11 +422,6 @@
                 parseCSV(file);
             }
         };
-
-        useEffect(() => {
-            setFileName("Default_Sample_Hazard_2026.csv");
-            parseCSV(DEFAULT_SAMPLE_CSV);
-        }, []);
 
         const filteredData = useMemo(() => {
             let temp = [...data];
@@ -598,7 +606,7 @@
         const uniqueCategories = [...new Set(data.map(d => d.category))].sort();
         const monthSortMap = {};
         data.forEach(d => { monthSortMap[d.month] = d.monthKey; });
-        const uniqueMonths = [...new Set(data.map(d => d.month))].sort((a, b) => monthSortMap[a].localeCompare(monthSortMap[b]));
+        const uniqueMonths = [...new Set(data.map(d => d.month))].sort((a, b) => (monthSortMap[a] || '').localeCompare(monthSortMap[b] || ''));
 
         const resetFilters = () => {
             setSearchTerm("");
@@ -660,7 +668,7 @@
         return (
             <div className="flex w-full min-h-screen bg-navy-900 text-slate-100 relative overflow-hidden">
                 
-                {/* Mobile Overlay Sidebar Toggle */}
+                {}
                 <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 fixed lg:relative z-40 w-80 h-full min-h-screen bg-navy-800 border-r border-slate-800 flex flex-col shadow-2xl overflow-y-auto shrink-0`}>
                     <div className="p-5 border-b border-slate-700/60">
                         <div className="flex items-center justify-between mb-4">
@@ -682,7 +690,7 @@
                         <div className="space-y-2">
                             <label className="cursor-pointer bg-aviation-blue/10 hover:bg-aviation-blue/20 text-aviation-blue border border-aviation-blue/40 text-xs font-bold py-2.5 px-3 rounded-lg transition-all flex items-center justify-center gap-2 w-full">
                                 <i className="fas fa-cloud-upload-alt text-sm"></i>
-                                <span>{isDataLoaded ? "Ganti File CSV" : "Upload CSV Data"}</span>
+                                <span>Ganti Data CSV</span>
                                 <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
                             </label>
 
@@ -692,14 +700,14 @@
                                     disabled={isExportingPDF || !isDataLoaded}
                                     className="text-xs font-semibold py-2 px-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center gap-1.5"
                                 >
-                                    <i className="fas fa-file-pdf"></i> PDF
+                                    <i className="fas fa-file-pdf"></i> Export PDF
                                 </button>
                                 <button 
                                     onClick={handleExportCSV}
                                     disabled={!isDataLoaded}
                                     className="text-xs font-semibold py-2 px-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center gap-1.5"
                                 >
-                                    <i className="fas fa-file-csv"></i> CSV
+                                    <i className="fas fa-file-csv"></i> Export CSV
                                 </button>
                             </div>
                         </div>
@@ -710,6 +718,7 @@
                                     <i className="fas fa-file-excel text-emerald-400"></i>
                                     <span className="truncate">{fileName}</span>
                                 </span>
+                                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono">LIVEMODE</span>
                             </div>
                         )}
                     </div>
@@ -718,11 +727,11 @@
                         <div className="flex items-center justify-between">
                             <span className="font-bold uppercase tracking-wider text-slate-400 text-[10px]">Filter Panel</span>
                             <button onClick={resetFilters} className="text-aviation-blue hover:underline text-[11px] flex items-center gap-1">
-                                <i className="fas fa-rotate-left"></i> Reset
+                                <i className="fas fa-rotate-left"></i> Reset Filter
                             </button>
                         </div>
 
-                        {/* Search Bar Input */}
+                        {/* Search Input */}
                         <div>
                             <label className="block text-slate-400 mb-1 font-semibold">Cari Keyword</label>
                             <div className="relative">
@@ -798,9 +807,10 @@
                     </div>
                 </aside>
 
+                {}
                 <main ref={dashboardRef} className={`${isExportingPDF ? 'w-[1080px] export-container' : 'flex-1'} flex flex-col h-screen overflow-y-auto bg-navy-900 p-4 lg:p-6`}>
                     
-                    {/* Top Bar Navigation */}
+                    {/* Navigation Topbar */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-navy-800/80 p-4 rounded-2xl border border-slate-700/60 no-export">
                         <div className="flex items-center gap-3">
                             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 bg-slate-800 rounded-lg text-slate-300">
@@ -852,6 +862,7 @@
                         </div>
                     )}
 
+                    {}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stats-section">
                         <div className="glass-panel p-4 rounded-xl border-l-4 border-l-aviation-blue shadow-md">
                             <div className="flex justify-between items-start">
@@ -894,18 +905,18 @@
                         </div>
                     </div>
 
-                    {/* TAB CONTENT 1: OVERVIEW */}
+                    {}
                     {activeTab === 'overview' && (
                         <div className="space-y-6">
                             
-                            {/* Monthly Trend & Status Distribution Grid */}
+                            {/* Monthly Trend & Status Pie Grid */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
                                             <i className="fas fa-chart-line text-aviation-blue"></i> Tren Kejadian Bulanan & Status
                                         </h3>
-                                        <span className="text-xs text-slate-400">Klik grafik untuk menyaring</span>
+                                        <span className="text-xs text-slate-400">Progres penanganan hazard</span>
                                     </div>
                                     <div className="w-full h-72">
                                         <ResponsiveContainer width="100%" height="100%">
@@ -971,12 +982,13 @@
                                 </div>
                             </div>
 
+                            {/* Daily Fluctuation Trend Chart */}
                             <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                                     <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                                        <i className="fas fa-chart-line text-sky-400"></i> Tren Kejadian Harian ({filterMonth === 'ALL' ? 'Semua Bulan' : `Bulan ${filterMonth}`})
+                                        <i className="fas fa-chart-line text-sky-400"></i> Fluktuasi Laporan Harian ({filterMonth === 'ALL' ? 'Semua Bulan' : `Bulan ${filterMonth}`})
                                     </h3>
-                                    <span className="text-xs text-slate-400">Fluktuasi laporan per tanggal</span>
+                                    <span className="text-xs text-slate-400">Distribusi tanggal laporan</span>
                                 </div>
                                 <div className="w-full h-64">
                                     {dailyTrendData.length > 0 ? (
@@ -1002,7 +1014,7 @@
                                 </div>
                             </div>
 
-                            {/* Top Categories & Top Locations Grid */}
+                            {}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                     <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
@@ -1049,10 +1061,11 @@
                                 </div>
                             </div>
 
+                            {}
                             <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl pdf-page-block">
                                 <h3 className="text-base font-bold text-slate-100 mb-4 flex items-center justify-between">
                                     <span className="flex items-center gap-2"><i className="fas fa-building text-aviation-blue"></i> Performa Bandara & Rekapitulasi</span>
-                                    <span className="text-xs text-slate-400 font-normal">Klik nama angka untuk lihat detail</span>
+                                    <span className="text-xs text-slate-400 font-normal">Klik angka untuk lihat detail</span>
                                 </h3>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs text-slate-200">
@@ -1095,7 +1108,7 @@
                         </div>
                     )}
 
-                    {/* TAB CONTENT 2: RISK MATRIX */}
+                    {}
                     {activeTab === 'risk' && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1161,7 +1174,7 @@
                         </div>
                     )}
 
-                    {/* TAB CONTENT 3: TABLE VIEW */}
+                    {}
                     {activeTab === 'table' && (
                         <div className="glass-panel p-5 rounded-2xl border border-slate-700/60 shadow-xl space-y-4">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1230,7 +1243,7 @@
                                 </table>
                             </div>
 
-                            {/* Pagination Buttons */}
+                            {/* Pagination Controls */}
                             <div className="flex items-center justify-between pt-3 border-t border-slate-800">
                                 <button 
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -1255,7 +1268,7 @@
 
                 </main>
 
-                {/* MODAL 1: Detail Item Hazard */}
+                {}
                 {detailModalItem && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                         <div className="bg-navy-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in">
@@ -1318,7 +1331,7 @@
                     </div>
                 )}
 
-                {/* MODAL 2: Modal Summary Bandara */}
+                {}
                 {modalConfig.isOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                         <div className="bg-navy-800 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
