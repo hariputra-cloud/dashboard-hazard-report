@@ -183,6 +183,18 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* High contrast styling for all select dropdown options */
+        select option {
+            background-color: #030712 !important;
+            color: #f8fafc !important;
+            padding: 8px 12px !important;
+            font-weight: 600 !important;
+        }
+        select option:hover, select option:focus, select option:active {
+            background-color: #00f0ff !important;
+            color: #030712 !important;
+        }
     </style>
 </head>
 <body class="h-full flex flex-col font-sans antialiased text-slate-100 bg-[#030712] min-h-screen">
@@ -250,6 +262,104 @@
     </header>
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- FILTER PANEL SECTION (DIPINDAH KE PALING ATAS) -->
+        <section class="glass-card rounded-2xl p-4 sm:p-5 border border-cyan-500/30 shadow-2xl">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-cyan-500/20">
+                <h2 class="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center">
+                    <i class="fa-solid fa-sliders mr-2"></i> FILTER PANEL &amp; SELEKSI DATA
+                </h2>
+                <button id="resetFilterBtn" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center space-x-1 transition bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-lg border border-cyan-500/30">
+                    <i class="fa-solid fa-rotate text-[11px]"></i>
+                    <span>Reset Filter</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <!-- Cari Keyword -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Cari Keyword</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-cyan-400 text-xs"></i>
+                        <input type="text" id="keywordSearchFilter" placeholder="Cari deskripsi, lokasi..." class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
+                    </div>
+                </div>
+
+                <!-- Rentang Tanggal -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Rentang Tanggal</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="startDateFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <input type="date" id="endDateFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                    </div>
+                </div>
+
+                <!-- Periode Bulan -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Periode Bulan</label>
+                    <select id="monthFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <option value="ALL">Semua Bulan</option>
+                    </select>
+                </div>
+
+                <!-- Bandara / Cabang -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Bandara / Cabang</label>
+                    <select id="airportFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <option value="ALL">Semua Bandara</option>
+                    </select>
+                </div>
+
+                <!-- Kategori Hazard -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Kategori Hazard</label>
+                    <select id="categoryFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <option value="ALL">Semua Kategori</option>
+                        <option value="Airfield Lighting">Airfield Lighting</option>
+                        <option value="Bird Strike">Bird Strike</option>
+                        <option value="Drainase Sisi Udara">Drainase Sisi Udara</option>
+                        <option value="FOD (Foreign Object Debris)">FOD (Foreign Object Debris)</option>
+                        <option value="Human Factor">Human Factor</option>
+                        <option value="Kelistrikan Bangunan">Kelistrikan Bangunan</option>
+                        <option value="Marka Runway/Taxiway/Apron">Marka Runway/Taxiway/Apron</option>
+                        <option value="Rumput & Vegetasi Liar">Rumput & Vegetasi Liar</option>
+                        <option value="Sanitasi">Sanitasi</option>
+                        <option value="Struktur Bangunan">Struktur Bangunan</option>
+                        <option value="Struktur Permukaan">Struktur Permukaan</option>
+                        <option value="Wildlife Hazard">Wildlife Hazard</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Status</label>
+                    <select id="statusFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <option value="ALL">Semua Status</option>
+                        <option value="CLOSED">CLOSED (Selesai)</option>
+                        <option value="OPEN">OPEN / ON-PROGRESS (Proses)</option>
+                    </select>
+                </div>
+
+                <!-- Tingkat Risiko -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 mb-1">Tingkat Risiko</label>
+                    <select id="riskFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                        <option value="ALL">Semua Tingkat Risiko</option>
+                        <option value="Tinggi">Tinggi (High)</option>
+                        <option value="Sedang">Sedang (Medium)</option>
+                        <option value="Rendah">Rendah (Low)</option>
+                    </select>
+                </div>
+
+                <!-- Apply Button -->
+                <div class="flex items-end">
+                    <button id="applyFilterBtn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-2 px-4 rounded-xl transition shadow-lg shadow-cyan-500/30 flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-filter"></i>
+                        <span>Terapkan Filter</span>
+                    </button>
+                </div>
+            </div>
+        </section>
 
         <!-- Top Overview Stats (Meniru Gambar Baru dengan Ring completion Rate) -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -345,7 +455,11 @@
                             <i class="fa-solid fa-trophy text-amber-400 text-lg"></i>
                             <span>Top Bandara per Top Kategori Hazard</span>
                         </h2>
-                        <span class="text-[10px] font-mono text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">KUMULATIF TERTINGGI</span>
+                        <div class="flex items-center">
+                            <select id="cardTopAirportFilter" class="bg-slate-950 border border-cyan-500/50 rounded-lg px-2.5 py-1 text-[11px] font-bold text-cyan-300 focus:outline-none cursor-pointer hover:border-cyan-400 transition">
+                                <option value="ALL">Semua Bandara</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="topAirportPerCategoryContainer" class="space-y-2.5">
@@ -380,203 +494,60 @@
         <!-- VIEW TAB 1: OVERVIEW -->
         <div id="viewOverview" class="space-y-6">
 
-            <!-- FILTER PANEL SECTION -->
-            <section class="glass-card rounded-2xl p-4 sm:p-5 border border-cyan-500/30 shadow-2xl">
-                <div class="flex items-center justify-between mb-4 pb-2 border-b border-cyan-500/20">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center">
-                        <i class="fa-solid fa-sliders mr-2"></i> FILTER PANEL &amp; SELEKSI DATA
-                    </h2>
-                    <button id="resetFilterBtn" class="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center space-x-1 transition bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-lg border border-cyan-500/30">
-                        <i class="fa-solid fa-rotate text-[11px]"></i>
-                        <span>Reset Filter</span>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    <!-- Cari Keyword -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Cari Keyword</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-cyan-400 text-xs"></i>
-                            <input type="text" id="keywordSearchFilter" placeholder="Cari deskripsi, lokasi..." class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
-                        </div>
-                    </div>
-
-                    <!-- Rentang Tanggal -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Rentang Tanggal</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="date" id="startDateFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <input type="date" id="endDateFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                        </div>
-                    </div>
-
-                    <!-- Periode Bulan -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Periode Bulan</label>
-                        <select id="monthFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <option value="ALL">Semua Bulan</option>
-                        </select>
-                    </div>
-
-                    <!-- Bandara / Cabang -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Bandara / Cabang</label>
-                        <select id="airportFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <option value="ALL">Semua Bandara</option>
-                        </select>
-                    </div>
-
-                    <!-- Kategori Hazard -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Kategori Hazard</label>
-                        <select id="categoryFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <option value="ALL">Semua Kategori</option>
-                            <option value="Airfield Lighting">Airfield Lighting</option>
-                            <option value="Bird Strike">Bird Strike</option>
-                            <option value="Drainase Sisi Udara">Drainase Sisi Udara</option>
-                            <option value="FOD (Foreign Object Debris)">FOD (Foreign Object Debris)</option>
-                            <option value="Human Factor">Human Factor</option>
-                            <option value="Kelistrikan Bangunan">Kelistrikan Bangunan</option>
-                            <option value="Marka Runway/Taxiway/Apron">Marka Runway/Taxiway/Apron</option>
-                            <option value="Rumput & Vegetasi Liar">Rumput & Vegetasi Liar</option>
-                            <option value="Sanitasi">Sanitasi</option>
-                            <option value="Struktur Bangunan">Struktur Bangunan</option>
-                            <option value="Struktur Permukaan">Struktur Permukaan</option>
-                            <option value="Wildlife Hazard">Wildlife Hazard</option>
-                        </select>
-                    </div>
-
-                    <!-- Status -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Status</label>
-                        <select id="statusFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <option value="ALL">Semua Status</option>
-                            <option value="CLOSED">CLOSED (Selesai)</option>
-                            <option value="OPEN">OPEN / ON-PROGRESS (Proses)</option>
-                        </select>
-                    </div>
-
-                    <!-- Tingkat Risiko -->
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-300 mb-1">Tingkat Risiko</label>
-                        <select id="riskFilter" class="w-full bg-slate-950/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                            <option value="ALL">Semua Tingkat Risiko</option>
-                            <option value="Tinggi">Tinggi (High)</option>
-                            <option value="Sedang">Sedang (Medium)</option>
-                            <option value="Rendah">Rendah (Low)</option>
-                        </select>
-                    </div>
-
-                    <!-- Apply Button -->
-                    <div class="flex items-end">
-                        <button id="applyFilterBtn" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-2 px-4 rounded-xl transition shadow-lg shadow-cyan-500/30 flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-filter"></i>
-                            <span>Terapkan Filter</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Fluktuasi Laporan Harian (DITAMPILKAN 1 BARIS FULL) -->
+            <!-- Fluktuasi Laporan Harian/Bulanan (DITAMPILKAN 1 BARIS FULL) -->
             <section class="glass-card rounded-2xl p-5 border border-cyan-500/20 w-full">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-cyan-500/20 gap-2">
                     <div>
                         <h2 class="text-sm font-black text-white flex items-center gap-2">
                             <span class="text-cyan-400 font-mono">//</span>
-                            <span>Fluktuasi Laporan Harian (Semua Bulan)</span>
+                            <span id="lineChartTitle">Fluktuasi Laporan Harian (Semua Bulan)</span>
                         </h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Distribusi tren tanggal laporan temuan keselamatan harian</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Distribusi tren tanggal laporan temuan keselamatan</p>
                     </div>
-                    <button onclick="downloadChartPNG('chartDailyFluctuation', 'Fluktuasi_Laporan_Harian')" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 font-bold text-xs px-3 py-1.5 rounded-xl border border-cyan-500/30 transition flex items-center self-start sm:self-auto">
-                        <i class="fa-solid fa-download mr-1.5 text-[11px]"></i> Gambar PNG
-                    </button>
+                    <div class="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+                        <div class="bg-slate-900 border border-cyan-500/30 rounded-xl p-1 flex space-x-1">
+                            <button id="btnTrendDaily" onclick="setTrendMode('daily')" class="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-500 text-slate-900 shadow-md transition">Harian</button>
+                            <button id="btnTrendMonthly" onclick="setTrendMode('monthly')" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition">Bulanan</button>
+                        </div>
+                        <button onclick="downloadChartPNG('chartDailyFluctuation', 'Fluktuasi_Laporan')" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 font-bold text-xs px-3 py-1.5 rounded-xl border border-cyan-500/30 transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5 text-[11px]"></i> PNG
+                        </button>
+                    </div>
                 </div>
                 <div class="relative h-72 sm:h-80 w-full">
                     <canvas id="chartDailyFluctuation"></canvas>
                 </div>
             </section>
 
-            <!-- SEKSI BARU: STATUS TINDAK LANJUT, KOMPOSISI HAZARD & RINGKASAN INSIGHT (3 KARTU DARI GAMBAR) -->
+            <!-- SEKSI BARU: KOMPOSISI HAZARD & RINGKASAN INSIGHT (2 KARTU DARI GAMBAR, LAYOUT DIPERLEBAR) -->
             <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Status Tindak Lanjut (4 Cols) -->
-                <div class="lg:col-span-4 glass-card neon-border-cyan rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <h2 class="text-xs font-black text-white uppercase tracking-wider mb-4 pb-2 border-b border-cyan-500/30 flex items-center gap-2">
-                            <i class="fa-solid fa-crosshairs text-cyan-400"></i>
-                            <span>Status Tindak Lanjut</span>
-                        </h2>
-                        <div id="statusProgressBarContainer" class="w-full bg-slate-900 h-5 rounded-full flex overflow-hidden border border-slate-800 my-4 shadow-inner">
-                            <!-- Dynamic colored bars -->
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 text-center mt-3 pt-3 border-t border-cyan-500/20">
-                            <div>
-                                <span class="text-[10px] text-emerald-400 font-extrabold block">CLOSED</span>
-                                <h4 id="statClosedCount" class="text-base font-black text-white font-mono">1.344</h4>
-                                <span id="statClosedPct" class="text-[10px] text-emerald-400 font-bold">77,2%</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-amber-400 font-extrabold block">PROSES</span>
-                                <h4 id="statProcessCount" class="text-base font-black text-white font-mono">396</h4>
-                                <span id="statProcessPct" class="text-[10px] text-amber-400 font-bold">22,8%</span>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-pink-400 font-extrabold block">URGENT</span>
-                                <h4 id="statUrgentCount" class="text-base font-black text-white font-mono">720</h4>
-                                <span id="statUrgentPct" class="text-[10px] text-pink-400 font-bold">41,4%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Komposisi Kategori Hazard (Donut) (4 Cols) -->
-                <div class="lg:col-span-4 glass-card neon-border-amber rounded-2xl p-5 flex flex-col justify-between">
+                <!-- Komposisi Kategori Hazard (Donut) (6 Cols) -->
+                <div class="lg:col-span-6 glass-card neon-border-amber rounded-2xl p-5 flex flex-col justify-between">
                     <div>
                         <h2 class="text-xs font-black text-white uppercase tracking-wider mb-3 pb-2 border-b border-amber-500/30 flex items-center gap-2">
                             <i class="fa-solid fa-chart-pie text-amber-400"></i>
                             <span>Komposisi Kategori Hazard</span>
                         </h2>
-                        <div class="relative h-44 w-full flex items-center justify-center">
+                        <!-- Resized container to h-[340px] for proportional donut chart display -->
+                        <div class="relative h-[340px] w-full flex items-center justify-center">
                             <canvas id="chartCategoryCompositionDonut"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Ringkasan Insight (4 Cols) -->
-                <div class="lg:col-span-4 glass-card neon-border-magenta rounded-2xl p-5 flex flex-col justify-between">
+                <!-- Ringkasan Insight (6 Cols) -->
+                <div class="lg:col-span-6 glass-card neon-border-magenta rounded-2xl p-5 flex flex-col justify-between">
                     <div>
-                        <h2 class="text-xs font-black text-white uppercase tracking-wider mb-4 pb-2 border-b border-pink-500/30 flex items-center gap-2">
-                            <i class="fa-solid fa-lightbulb text-pink-400"></i>
-                            <span>Ringkasan Insight</span>
+                        <h2 class="text-xs font-black text-white uppercase tracking-wider mb-4 pb-2 border-b border-pink-500/30 flex items-center justify-between">
+                            <span class="flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-pink-400"></i>
+                                <span>Ringkasan Insight &amp; Rekomendasi Evaluasi</span>
+                            </span>
+                            <span class="text-[10px] text-pink-400 font-mono font-bold bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/30">SMS &amp; SMK3 COMPLIANCE</span>
                         </h2>
-                        <div class="space-y-3">
-                            <div class="p-2.5 rounded-xl bg-slate-950/90 border border-cyan-500/30 flex items-start space-x-3">
-                                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                                    <i class="fa-solid fa-arrow-trend-up"></i>
-                                </div>
-                                <div class="text-xs">
-                                    <p class="font-bold text-white">Temuan <span class="text-cyan-400">meningkat +12.4%</span></p>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">dibandingkan dengan periode pemantauan sebelumnya.</p>
-                                </div>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-950/90 border border-emerald-500/30 flex items-start space-x-3">
-                                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                                    <i class="fa-solid fa-shield-check"></i>
-                                </div>
-                                <div class="text-xs">
-                                    <p id="insightCompletionText" class="font-bold text-white"><span class="text-emerald-400">77,2%</span> laporan telah diselesaikan</p>
-                                    <p id="insightCompletionDetail" class="text-[11px] text-slate-400 mt-0.5">(1.344 dari 1.740 laporan hazard total).</p>
-                                </div>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-slate-950/90 border border-pink-500/30 flex items-start space-x-3">
-                                <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                                    <i class="fa-solid fa-triangle-exclamation"></i>
-                                </div>
-                                <div class="text-xs">
-                                    <p id="insightHighRiskText" class="font-bold text-white"><span class="text-pink-400">720</span> temuan berisiko tinggi</p>
-                                    <p class="text-[11px] text-slate-400 mt-0.5">memerlukan jadwal mitigasi prioritas.</p>
-                                </div>
-                            </div>
+                        <!-- Added scroll container with max height and custom styling -->
+                        <div id="insightContainer" class="space-y-3 max-h-[360px] overflow-y-auto pr-1 text-xs">
+                            <!-- Dynamic insights populated by JS based on current filtered data -->
                         </div>
                     </div>
                 </div>
@@ -931,6 +902,7 @@
         let filteredDataset = [];
         let currentPage = 1;
         const rowsPerPage = 6;
+        let trendChartMode = 'daily'; // State Line Chart
 
         // Sorting State for Rekapitulasi Table
         let rekapSortColumn = 'total';
@@ -1338,10 +1310,12 @@
         function initFiltersDropdowns() {
             const airportSelect = document.getElementById('airportFilter');
             const leaderboardAirportSelect = document.getElementById('leaderboardAirportFilter');
+            const cardTopAirportSelect = document.getElementById('cardTopAirportFilter');
             const monthSelect = document.getElementById('monthFilter');
 
             const currentAirport = airportSelect.value;
             const currentLbAirport = leaderboardAirportSelect ? leaderboardAirportSelect.value : 'ALL';
+            const currentCardAirport = cardTopAirportSelect ? cardTopAirportSelect.value : 'ALL';
             const currentMonth = monthSelect.value;
 
             // Get unique airports in dataset, sorted alphabetically by Full Airport Name
@@ -1357,6 +1331,9 @@
             if (leaderboardAirportSelect) {
                 leaderboardAirportSelect.innerHTML = '<option value="ALL">Semua Bandara (Akumulasi Global)</option>';
             }
+            if (cardTopAirportSelect) {
+                cardTopAirportSelect.innerHTML = '<option value="ALL">Semua Bandara</option>';
+            }
 
             airports.forEach(a => {
                 const opt = document.createElement('option');
@@ -1369,6 +1346,13 @@
                     lbOpt.value = a;
                     lbOpt.textContent = `${airportFullNameMap[a] || a} (${a})`;
                     leaderboardAirportSelect.appendChild(lbOpt);
+                }
+
+                if (cardTopAirportSelect) {
+                    const cOpt = document.createElement('option');
+                    cOpt.value = a;
+                    cOpt.textContent = `${a} - ${airportFullNameMap[a] || a}`;
+                    cardTopAirportSelect.appendChild(cOpt);
                 }
             });
 
@@ -1393,6 +1377,7 @@
 
             if (airports.includes(currentAirport)) airportSelect.value = currentAirport;
             if (leaderboardAirportSelect && airports.includes(currentLbAirport)) leaderboardAirportSelect.value = currentLbAirport;
+            if (cardTopAirportSelect && airports.includes(currentCardAirport)) cardTopAirportSelect.value = currentCardAirport;
             if (monthKeys.includes(currentMonth)) monthSelect.value = currentMonth;
 
             renderAirportChips(airports);
@@ -1449,6 +1434,10 @@
                     renderTopReportersLeaderboard();
                 });
             }
+
+            document.getElementById('cardTopAirportFilter')?.addEventListener('change', () => {
+                renderTopAirportPerCategoryCard();
+            });
 
             document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
             document.getElementById('closeModalFooterBtn')?.addEventListener('click', closeModal);
@@ -1522,8 +1511,8 @@
             renderKPICards();
             renderTopAirportPerCategoryCard();
             renderTopAreaDonutChart();
-            renderStatusProgressSection();
             renderCategoryCompositionDonut();
+            renderDynamicInsights();
             renderDailyFluctuationChart();
             renderCombinedTemuanCompletionChart();
             renderReportersCountChart();
@@ -1535,13 +1524,217 @@
             renderDataTable();
         }
 
+        // Generate Dynamic Ringkasan Insight based on filtered data
+        function renderDynamicInsights() {
+            const container = document.getElementById('insightContainer');
+            if (!container) return;
+
+            if (filteredDataset.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-400 p-4 text-center border border-dashed border-slate-800 rounded-xl">Tidak ada data laporan untuk dianalisis pada parameter filter ini.</div>`;
+                return;
+            }
+
+            const total = filteredDataset.length;
+            const selectedApt = document.getElementById('airportFilter')?.value || 'ALL';
+            const scopeLabel = selectedApt === 'ALL' ? 'Seluruh Bandara (Kumulatif)' : `${airportFullNameMap[selectedApt] || selectedApt} (${selectedApt})`;
+
+            // 1. Top Hazard Categories Analysis
+            const catMap = {};
+            filteredDataset.forEach(d => { catMap[d.category] = (catMap[d.category] || 0) + 1; });
+            const sortedCats = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
+            const topCat1 = sortedCats[0] || 'FOD (Foreign Object Debris)';
+            const topCat1Count = catMap[topCat1] || 0;
+            const topCat1Pct = ((topCat1Count / total) * 100).toFixed(1);
+
+            const topCat2 = sortedCats[1] || null;
+            const topCat2Count = topCat2 ? catMap[topCat2] : 0;
+            const topCat2Pct = topCat2 ? ((topCat2Count / total) * 100).toFixed(1) : 0;
+
+            // 2. Top Location Analysis
+            const locMap = {};
+            filteredDataset.forEach(d => { locMap[d.location] = (locMap[d.location] || 0) + 1; });
+            const sortedLocs = Object.keys(locMap).sort((a, b) => locMap[b] - locMap[a]);
+            const topLoc = sortedLocs[0] || 'Apron';
+            const topLocCount = locMap[topLoc] || 0;
+            const topLocPct = ((topLocCount / total) * 100).toFixed(1);
+
+            // 3. Status & High Risk Analysis
+            const closedCount = filteredDataset.filter(d => isClosedStatus(d.status)).length;
+            const closedPct = parseFloat(((closedCount / total) * 100).toFixed(1));
+            const highRiskCount = filteredDataset.filter(d => d.risk === 'Tinggi').length;
+            const highRiskPct = ((highRiskCount / total) * 100).toFixed(1);
+
+            // Category Specific Regulatory Guidelines Mapping
+            const getCategoryGuidance = (catName) => {
+                const lower = String(catName).toLowerCase();
+                if (lower.includes('fod') || lower.includes('foreign')) {
+                    return {
+                        ref: 'ICAO Doc 9137 Part 8 & PM 39/2019 (Runway Safety)',
+                        action: 'Tingkatkan inspeksi rutin *FOD Sweep* sebelum puncaknya penerbangan, penyediaan penampung FOD di apron bay, serta audit berkala terhadap kelengkapan kendaraan Ground Handling.'
+                    };
+                }
+                if (lower.includes('bird') || lower.includes('burung') || lower.includes('wildlife')) {
+                    return {
+                        ref: 'ICAO Doc 9137 Part 13 (Wildlife Hazard Management)',
+                        action: 'Tingkatkan pengoperasian alat pengusir burung (bio-acoustics/pyrotechnics), pemangkasan vegetasi tempat sarang, dan koordinasi dengan pengelola lingkungan sekitar bandara.'
+                    };
+                }
+                if (lower.includes('lighting') || lower.includes('lampu') || lower.includes('afl')) {
+                    return {
+                        ref: 'ICAO Annex 14 Vol I & Peraturan Ditjen Hubud (AFL Maintenance)',
+                        action: 'Lakukan pengujian fotometrik berkala, pembersihan lensa lampu Runway/Taxiway, dan inspeksi rutin kabel sekunder guna mencegah mati lampu tiba-tiba.'
+                    };
+                }
+                if (lower.includes('drainase') || lower.includes('parit') || lower.includes('air')) {
+                    return {
+                        ref: 'Standar Aerodrome Drainage Management & ISO 14001',
+                        action: 'Pembersihan sedimen saluran secara berkala sebelum musim hujan dan evaluasi kapasitas penampungan untuk mencegah genangan air (*hydroplaning hazard*).'
+                    };
+                }
+                if (lower.includes('human') || lower.includes('kelalaian')) {
+                    return {
+                        ref: 'SMS Safety Culture & Standard ISO 45001 / SMK3',
+                        action: 'Intensifkan *Safety Briefing* harian, pengawasan kepatuhan APD, dan sosialisasi budaya *Just Culture* (Voluntary Hazard Reporting System).'
+                    };
+                }
+                return {
+                    ref: 'ICAO Doc 9859 Safety Management Manual (SMM)',
+                    action: 'Lakukan evaluasi pemeliharaan fasilitas secara preventif, pemetaan area rawan, serta koordinasi teknis terjadwal dengan unit terkait.'
+                };
+            };
+
+            const cat1Guidance = getCategoryGuidance(topCat1);
+            const cat2Guidance = topCat2 ? getCategoryGuidance(topCat2) : null;
+
+            // Performance Benchmark Class
+            let performanceClass = "border-emerald-500/40 bg-emerald-950/30";
+            let performanceBadge = "text-emerald-400 bg-emerald-500/20 border-emerald-500/40";
+            let performanceStatus = "SANGAT BAIK (EXCELLENT)";
+            if (closedPct < 60) {
+                performanceClass = "border-rose-500/40 bg-rose-950/30";
+                performanceBadge = "text-rose-400 bg-rose-500/20 border-rose-500/40";
+                performanceStatus = "PERLU PERHATIAN KHUSUS (CRITICAL)";
+            } else if (closedPct < 80) {
+                performanceClass = "border-amber-500/40 bg-amber-950/30";
+                performanceBadge = "text-amber-400 bg-amber-500/20 border-amber-500/40";
+                performanceStatus = "DALAM MONITORING (MODERATE)";
+            }
+
+            container.innerHTML = `
+                <!-- Scope Header -->
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-[11px]">
+                    <span class="text-slate-400">Lingkup Evaluasi Data:</span>
+                    <span class="font-bold text-cyan-300 font-mono truncate max-w-[240px]">${scopeLabel}</span>
+                </div>
+
+                <!-- Insight 1: Primary Hazard Category -->
+                <div class="p-3 rounded-xl bg-slate-950/90 border border-amber-500/30 space-y-1.5 shadow-md hover:border-amber-500/60 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-amber-400 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-xs"></i> Top Hazard Utama: ${topCat1}
+                        </span>
+                        <span class="font-mono text-[10px] text-amber-300 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                            ${topCat1Count} laporan (${topCat1Pct}%)
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Kategori ini merupakan potensi bahaya yang paling mendominasi. Sesuai dengan rujukan <strong>${cat1Guidance.ref}</strong>: ${cat1Guidance.action}
+                    </p>
+                </div>
+
+                ${topCat2 ? `
+                <!-- Insight 2: Secondary Hazard Category -->
+                <div class="p-3 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-1.5 shadow-md hover:border-cyan-500/60 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-cyan-400 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-line text-xs"></i> Kategori Sekunder: ${topCat2}
+                        </span>
+                        <span class="font-mono text-[10px] text-cyan-300 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/30">
+                            ${topCat2Count} laporan (${topCat2Pct}%)
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Menjadi kontributor hazard terbesar kedua. Direkomendasikan melakukan mitigasi spesifik (<strong>${cat2Guidance.ref}</strong>): ${cat2Guidance.action}
+                    </p>
+                </div>
+                ` : ''}
+
+                <!-- Insight 3: High-Risk & Mitigation Prioritization -->
+                <div class="p-3 rounded-xl bg-slate-950/90 border border-pink-500/30 space-y-1.5 shadow-md hover:border-pink-500/60 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-pink-400 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-fire-extinguisher text-xs"></i> Mitigasi Risiko Tinggi (High Risk / Urgent)
+                        </span>
+                        <span class="font-mono text-[10px] text-pink-300 font-bold bg-pink-500/10 px-1.5 py-0.5 rounded border border-pink-500/30">
+                            ${highRiskCount} Temuan (${highRiskPct}%)
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Berdasarkan prinsip <i>Safety Risk Management</i> (SRM ICAO Doc 9859), seluruh ${highRiskCount} laporan berisiko tinggi wajib dilengkapi dengan <strong>Corrective Action Plan (CAP)</strong>, <i>Root Cause Analysis</i> (RCA), serta dipantau mitigasinya oleh Safety Inspector hingga dinyatakan *CLOSED*.
+                    </p>
+                </div>
+
+                <!-- Insight 4: Hotspot Location Patrol -->
+                <div class="p-3 rounded-xl bg-slate-950/90 border border-sky-500/30 space-y-1.5 shadow-md hover:border-sky-500/60 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-sky-400 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-map-location-dot text-xs"></i> Area Lokasi Rawan (Hotspot): ${topLoc}
+                        </span>
+                        <span class="font-mono text-[10px] text-sky-300 font-bold bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/30">
+                            ${topLocCount} Temuan (${topLocPct}%)
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Area <strong>${topLoc}</strong> memerlukan perhatian khusus bagi personel Apron Movement Control (AMC) &amp; Avsec. Direkomendasikan untuk meningkatkan frekuensi patroli inspeksi keselamatan harian dan menambah rambu peringatan keselamatan.
+                    </p>
+                </div>
+
+                <!-- Insight 5: Completion Performance Rate (SPI/SPT Target) -->
+                <div class="p-3 rounded-xl ${performanceClass} space-y-1.5 shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black text-xs text-white flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-check text-xs"></i> Indikator Kinerja Penyelesaian (SPI/SPT)
+                        </span>
+                        <span class="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded border ${performanceBadge}">
+                            ${closedPct}% (${performanceStatus})
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Sebanyak <strong>${closedCount} dari ${total} laporan</strong> telah berhasil diselesaikan (*CLOSED*). Untuk mempertahankan tingkat keselamatan operasi penerbangan sesuai standar SMK3/ISO 45001, pastikan waktu penyelesaian laporan (*Resolution Lead Time*) tidak melebihi SLA yang ditetapkan.
+                    </p>
+                </div>
+            `;
+        }
+
+        // Mode Toggle Harian & Bulanan
+        function setTrendMode(mode) {
+            trendChartMode = mode;
+            const btnDaily = document.getElementById('btnTrendDaily');
+            const btnMonthly = document.getElementById('btnTrendMonthly');
+            const title = document.getElementById('lineChartTitle');
+            
+            if (mode === 'daily') {
+                btnDaily.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-500 text-slate-900 shadow-md transition';
+                btnMonthly.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition';
+                title.textContent = 'Fluktuasi Laporan Harian (Semua Bulan)';
+            } else {
+                btnMonthly.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-500 text-slate-900 shadow-md transition';
+                btnDaily.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition';
+                title.textContent = 'Tren Laporan Bulanan (Semua Tahun)';
+            }
+            renderDailyFluctuationChart();
+        }
+
         // Render Card 1: Top Bandara per Top Kategori Hazard (Dengan Mini Progress Bar dari Gambar Baru)
         function renderTopAirportPerCategoryCard() {
             const container = document.getElementById('topAirportPerCategoryContainer');
             if (!container) return;
 
+            const selectedApt = document.getElementById('cardTopAirportFilter')?.value || 'ALL';
+            const dataToUse = selectedApt === 'ALL' ? filteredDataset : filteredDataset.filter(d => d.airport === selectedApt);
+
             const catMap = {};
-            filteredDataset.forEach(d => {
+            dataToUse.forEach(d => {
                 const cat = d.category || 'FOD (Foreign Object Debris)';
                 if (!catMap[cat]) catMap[cat] = { total: 0, airports: {} };
                 catMap[cat].total += 1;
@@ -1587,9 +1780,12 @@
 
             top7Cats.forEach((catName, idx) => {
                 const catData = catMap[catName];
+                // If filtered by single airport, topAptCode will naturally be that airport
                 const topAptCode = Object.keys(catData.airports).sort((a, b) => catData.airports[b] - catData.airports[a])[0] || 'UNKNOWN';
                 const count = catData.airports[topAptCode] || 0;
-                const pct = catData.total > 0 ? ((count / catData.total) * 100).toFixed(1) : 0;
+                // Calculate percentage based on the data context (Filtered Total vs Global Total)
+                const pct = dataToUse.length > 0 ? ((count / dataToUse.length) * 100).toFixed(1) : 0;
+                
                 const style = badgeGradients[idx % badgeGradients.length];
                 const catIcon = getCategoryIcon(catName);
                 const displayCategoryName = catName.split('(')[0].trim();
@@ -1776,8 +1972,84 @@
                 categoryCompositionDonutChart.destroy();
             }
 
+            const donutCalloutPlugin = {
+                id: 'donutCalloutPlugin',
+                afterDraw(chart) {
+                    const { ctx, chartArea: { top, bottom, left, right } } = chart;
+                    const meta = chart.getDatasetMeta(0);
+                    if (!meta || !meta.data || meta.data.length === 0) return;
+
+                    const centerX = (left + right) / 2;
+                    const centerY = (top + bottom) / 2;
+
+                    ctx.save();
+                    
+                    chart.data.labels.forEach((label, i) => {
+                        const arc = meta.data[i];
+                        const count = chart.data.datasets[0].data[i];
+                        if (!arc || count === 0) return;
+
+                        const startAngle = arc.startAngle;
+                        const endAngle = arc.endAngle;
+                        const midAngle = startAngle + (endAngle - startAngle) / 2;
+                        
+                        const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        const pct = ((count / total) * 100).toFixed(1) + '%';
+
+                        const radius = arc.outerRadius;
+                        if(radius <= 0) return;
+
+                        const rEdge = radius;
+                        const xEdge = centerX + Math.cos(midAngle) * rEdge;
+                        const yEdge = centerY + Math.sin(midAngle) * rEdge;
+                        
+                        const rOuter = radius + 22;
+                        const xOuter = centerX + Math.cos(midAngle) * rOuter;
+                        const yOuter = centerY + Math.sin(midAngle) * rOuter;
+                        
+                        const isRightSide = xOuter > centerX;
+                        const lineLength = 22;
+                        const xTextPoint = isRightSide ? xOuter + lineLength : xOuter - lineLength;
+
+                        // Menggambar Garis Callout Modern
+                        ctx.beginPath();
+                        ctx.moveTo(xEdge, yEdge);
+                        ctx.lineTo(xOuter, yOuter);
+                        ctx.lineTo(xTextPoint, yOuter);
+                        ctx.strokeStyle = arc.options.backgroundColor; 
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                        
+                        // Titik Aksentuasi Pada Ujung Garis
+                        ctx.beginPath();
+                        ctx.arc(xTextPoint, yOuter, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = arc.options.backgroundColor;
+                        ctx.fill();
+
+                        const padding = 7;
+                        ctx.textAlign = isRightSide ? 'left' : 'right';
+                        
+                        // Nama Kategori (Diatas Garis)
+                        ctx.textBaseline = 'bottom';
+                        ctx.font = 'bold 10px "Inter", sans-serif';
+                        ctx.fillStyle = arc.options.backgroundColor;
+                        const shortLabel = label.length > 22 ? label.substring(0, 20) + '...' : label;
+                        ctx.fillText(shortLabel, isRightSide ? xTextPoint + padding : xTextPoint - padding, yOuter - 2);
+
+                        // Jumlah & Persentase (Dibawah Garis)
+                        ctx.textBaseline = 'top';
+                        ctx.font = '700 10.5px "Inter", sans-serif';
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillText(`${count} (${pct})`, isRightSide ? xTextPoint + padding : xTextPoint - padding, yOuter + 3);
+                    });
+                    
+                    ctx.restore();
+                }
+            };
+
             categoryCompositionDonutChart = new Chart(ctx, {
                 type: 'doughnut',
+                plugins: [donutCalloutPlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -1788,9 +2060,12 @@
                     }]
                 },
                 options: {
+                    layout: {
+                        padding: { left: 70, right: 70, top: 25, bottom: 25 }
+                    },
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '65%',
+                    cutout: '60%',
                     plugins: {
                         legend: { display: false },
                         datalabels: { display: false }
@@ -1819,19 +2094,32 @@
             }
         }
 
-        // 1. Chart Fluktuasi Laporan Harian (LINE CHART 1 BARIS FULL)
+        // 1. Chart Fluktuasi Laporan Harian/Bulanan (LINE CHART 1 BARIS FULL)
         function renderDailyFluctuationChart() {
             const ctx = document.getElementById('chartDailyFluctuation')?.getContext('2d');
             if (!ctx) return;
 
-            const dailyMap = {};
+            const timeMap = {};
             filteredDataset.forEach(d => {
                 if (!d.event_date) return;
-                dailyMap[d.event_date] = (dailyMap[d.event_date] || 0) + 1;
+                let key = d.event_date;
+                if (trendChartMode === 'monthly') {
+                    key = parseMonthKey(d.event_date) || d.event_date.substring(0, 7);
+                }
+                timeMap[key] = (timeMap[key] || 0) + 1;
             });
 
-            const sortedDates = Object.keys(dailyMap).sort();
-            const totalCounts = sortedDates.map(dt => dailyMap[dt]);
+            const sortedDates = Object.keys(timeMap).sort();
+            const totalCounts = sortedDates.map(dt => timeMap[dt]);
+
+            const displayLabels = sortedDates.map(dt => {
+                if (trendChartMode === 'monthly' && dt.length === 7) {
+                    const [yyyy, mm] = dt.split('-');
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+                    return `${monthNames[parseInt(mm, 10) - 1]} ${yyyy}`;
+                }
+                return dt;
+            });
 
             if (dailyFluctuationChart) {
                 dailyFluctuationChart.destroy();
@@ -1840,16 +2128,16 @@
             dailyFluctuationChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sortedDates,
+                    labels: displayLabels,
                     datasets: [{
-                        label: 'Total Hazard Harian',
+                        label: trendChartMode === 'daily' ? 'Total Hazard Harian' : 'Total Hazard Bulanan',
                         data: totalCounts,
                         borderColor: '#00f0ff',
                         backgroundColor: 'rgba(0, 240, 255, 0.12)',
                         fill: true,
                         tension: 0.35,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
+                        pointRadius: trendChartMode === 'monthly' ? 5 : 3,
+                        pointHoverRadius: trendChartMode === 'monthly' ? 8 : 6,
                         pointBackgroundColor: '#00f0ff',
                         borderWidth: 2
                     }]
@@ -1868,8 +2156,9 @@
                             color: '#00f0ff',
                             align: 'top',
                             anchor: 'end',
+                            offset: 4,
                             font: { weight: 'bold', size: 9 },
-                            formatter: (val) => val > 5 ? val : ''
+                            formatter: (val) => val > (trendChartMode === 'monthly' ? 0 : 5) ? val : ''
                         }
                     },
                     scales: {
